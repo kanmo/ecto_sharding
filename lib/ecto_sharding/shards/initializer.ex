@@ -13,6 +13,7 @@ defmodule Ecto.Sharding.Shards.Initializer do
         raise "Config #{unquote(config[:config_key])} can't be nil"
       end
 
+      @base_module_name unquote(config[:base_module_name])
       @repository_name unquote(config[:name])
       @table_name unquote(config[:table])
       @sequence_table_name unquote(config[:sequence_table_name])
