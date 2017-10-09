@@ -16,8 +16,7 @@ defmodule Ecto.Sharding.Shards.Initializer do
       @base_module_name unquote(config[:base_module_name])
       @repository_name unquote(config[:name])
       @table_name unquote(config[:table])
-      @sequence_table_name unquote(config[:sequence_table_name])
-
+      @sequence_table_name unquote(config[:sequence_table])
 
       def generate_repository_supervisor(children) do
         count = @databases[:count]
@@ -25,21 +24,19 @@ defmodule Ecto.Sharding.Shards.Initializer do
         if count && count > 0 do
           import Supervisor.Spec, warn: false
           # TODO: name
-          worker_name = unquote(Ecto.Sharding.Repositories.UserWorker)
-          supervisor_name = unquote(Ecto.Sharding.Repositories.UserSupervisor)
           # supervisor(module, args, options)
           children ++ [
             supervisor(Ecto.Sharding.Repositories.ShardedSupervisor,
-              [%{ worker_name: worker_name,
+              [%{ worker_name: unquote(config[:worker_name]),
                   utils: __MODULE__,
-                  name: supervisor_name
+                  name: unquote(config[:supervisor_name])
                 }],
               [id: make_ref()])
           ] ++ [
             supervisor(Ecto.Sharding.Repositories.SequencerSupervisor,
-              [%{ worker_name: Ecto.Sharding.Repositories.SequenceWorker,
+              [%{ worker_name: unquote(config[:sequence_worker_name]),
                   utils: __MODULE__,
-                  name: Ecto.Sharding.Repositories.SequenceSupervisor
+                  name: unquote(config[:sequence_supervisor_name])
                 }],
               [id: make_ref()]
             )
@@ -48,8 +45,6 @@ defmodule Ecto.Sharding.Shards.Initializer do
           children
         end
       end
-
-      def databases_key(key), do: @databases[key]
 
       def repositories_to_load do
         for n <- 0..(@databases[:count] - 1) do
@@ -72,7 +67,7 @@ defmodule Ecto.Sharding.Shards.Initializer do
 
       def create_sequencer_module do
         db = @databases[:sequencer]
-        mod = Module.concat([@base_module_name, Sequencer])
+        mod = sequencer_module_name(@base_module_name, Sequencer)
         Application.put_env(@app_name, mod, db)
 
         Ecto.Sharding.Shards.create_sequencer_module(%{table: @sequence_table_name, app_name: @app_name, module: mod})
@@ -85,6 +80,18 @@ defmodule Ecto.Sharding.Shards.Initializer do
 
       def repository_module(position) do
         repository_module_name(@base_module_name, @repository_name, position)
+      end
+
+      def sharded_insert(changeset, opts) do
+      end
+
+      def next_sequence_id do
+        update_query = "UPDATE `#{@sequence_table_name}` SET id = LAST_INSERT_ID(id + 1)"
+        mod = sequencer_module_name(@base_module_name, Sequencer)
+        mod.run(update_query)
+        select_query = "SELECT LAST_INSERT_ID()"
+        resp = mod.run(select_query)
+        resp |> List.first |> List.first
       end
 
 

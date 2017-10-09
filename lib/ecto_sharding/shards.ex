@@ -22,6 +22,10 @@ defmodule Ecto.Sharding.Shards do
     Module.concat([base, "#{name}#{position}"])
   end
 
+  def sequencer_module_name(base, name) do
+    Module.concat([base, name])
+  end
+
   def do_create_module(%{position: position, table: table, app_name: app_name, module: module}) do
     Module.create(module,
       quote do
