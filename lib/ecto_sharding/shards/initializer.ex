@@ -88,12 +88,10 @@ defmodule Ecto.Sharding.Shards.Initializer do
       def next_sequence_id do
         update_query = "UPDATE `#{@sequence_table_name}` SET id = LAST_INSERT_ID(id + 1)"
         mod = sequencer_module_name(@base_module_name, Sequencer)
-        mod.run(update_query)
-        select_query = "SELECT LAST_INSERT_ID()"
-        resp = mod.run(select_query)
-        resp |> List.first |> List.first
-      end
+        resp = mod.run(update_query)
 
+        resp.last_insert_id
+      end
 
     end
   end
