@@ -15,6 +15,8 @@ defmodule Ecto.Sharding.Shards.Initializer do
 
       @repository_name unquote(config[:name])
       @table_name unquote(config[:table])
+      @sequence_table_name unquote(config[:sequence_table_name])
+
 
       def generate_repository_supervisor(children) do
         count = @databases[:count]
@@ -32,6 +34,14 @@ defmodule Ecto.Sharding.Shards.Initializer do
                   name: supervisor_name
                 }],
               [id: make_ref()])
+          ] ++ [
+            supervisor(Ecto.Sharding.Repositories.SequencerSupervisor,
+              [%{ worker_name: Ecto.Sharding.Repositories.SequenceWorker,
+                  utils: __MODULE__,
+                  name: Ecto.Sharding.Repositories.SequenceSupervisor
+                }],
+              [id: make_ref()]
+            )
           ]
         else
           children
@@ -52,6 +62,19 @@ defmodule Ecto.Sharding.Shards.Initializer do
         Application.put_env(@app_name, mod, db)
 
         Ecto.Sharding.Shards.create_repository_module(%{position: position, table: @table_name, app_name: @app_name, module: mod})
+
+        ecto_repos = Application.get_env(@app_name, :ecto_repos)
+        Application.put_env(@app_name, :ecto_repos, ecto_repos ++ [mod])
+
+        mod
+      end
+
+      def create_sequencer_module do
+        db = @databases[:sequencer]
+        mod = Module.concat([@base_module_name, Sequencer])
+        Application.put_env(@app_name, mod, db)
+
+        Ecto.Sharding.Shards.create_sequencer_module(%{table: @sequence_table_name, app_name: @app_name, module: mod})
 
         ecto_repos = Application.get_env(@app_name, :ecto_repos)
         Application.put_env(@app_name, :ecto_repos, ecto_repos ++ [mod])
