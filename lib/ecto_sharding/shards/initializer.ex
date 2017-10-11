@@ -82,7 +82,13 @@ defmodule Ecto.Sharding.Shards.Initializer do
         repository_module_name(@base_module_name, @repository_name, position)
       end
 
-      def sharded_insert(changeset, opts) do
+      def sharded_insert(changeset) do
+        id = next_sequence_id
+        position = shard_for(@databases[:count], id)
+        # TODO: shard_key
+        sharded_changeset = Ecto.Changeset.change(changeset, %{user_id: id})
+        # TODO: is_list(changeset)
+        repository_module_name(@base_module_name, @repository_name, position).insert_all(@table_name, [sharded_changeset.changes], [])
       end
 
       def next_sequence_id do
