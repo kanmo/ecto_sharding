@@ -68,6 +68,14 @@ defmodule Ecto.Sharding.Shards.ShardingInitializer do
       def insert_all(position, table_name, changeset) do
         insert_all(position, table_name, [changeset])
       end
+
+      def repository(user_id) do
+        repository_module(shard_key(user_id))
+      end
+
+      def shard_key(user_id) do
+        Integer.mod(user_id, @cluster_config[:count])
+      end
     end
   end
 end
