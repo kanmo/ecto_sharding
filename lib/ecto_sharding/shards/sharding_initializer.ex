@@ -37,7 +37,7 @@ defmodule Ecto.Sharding.Shards.ShardingInitializer do
       end
 
       def generate_sharding_repository_supervisor(children) do
-        count = Application.get_env(:sharding_app, :cluster)[:count]
+        count = Application.get_env(@app_name, :cluster)[:count]
 
         if count && count > 0 do
           import Supervisor.Spec, warn: false
