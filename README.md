@@ -22,7 +22,7 @@ end
 ```
 
 ### Usage
-Add database connections to you application's config/#{env}.exs:
+#### Add database connections to you application's config/#{env}.exs:
 
 ```elixir
 user_databases = [
@@ -77,11 +77,34 @@ config :sharding_app, :sequencer, [
 config :sharding_app, ecto_repos: []
 ```
 
-Add this example your application's lib/your_app_name/shards/users.ex:
+#### Add this example your application's lib/your_app_name/shards/users.ex:
 
 ```elixir
 defmodule YourAppName.Shards.Users do
   use Ecto.Sharding.Shards.ShardingInitializer
   use Ecto.Sharding.Shards.SequencerInitializer
 end
+```
+
+#### Add the sharding ecto repository to your supervisor tree
+
+```elixir
+defmodule YourAppName do
+  use Application
+
+  def start(_type, _args) do
+    import Supervisor.Spec, warn: false
+
+    children = YourAppName.Shards.Users.generate_sharding_repository_supervisor([]) ++ YourAppName.Shards.Users.generate_sequencer_repository_supervisor([])
+
+    opts = [strategy: :one_for_one, name: YourAppName.Supervisor]
+    Supervisor.start_link(children, opts)
+  end
+end
+```
+
+#### Get the ecto repository module for a user_id
+
+```elixir
+repository = YourApp.Shards.Users.repository(user.user_id)
 ```
