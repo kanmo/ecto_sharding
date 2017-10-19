@@ -35,7 +35,7 @@ defmodule Ecto.Sharding.Shards.SequencerInitializer do
       end
 
       def next_sequence_id do
-        update_query = "UPDATE `#{@cluster_config[:table]}` SET id = LAST_INSERT_ID(id + 1)"
+        update_query = "UPDATE `#{@sequencer_config[:table]}` SET id = LAST_INSERT_ID(id + 1)"
         mod = sequencer_module_name(@base_module_name, Sequencer)
         resp = mod.run(update_query)
 
