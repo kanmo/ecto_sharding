@@ -59,6 +59,8 @@ defmodule Ecto.Sharding.Shards.ShardingInitializer do
         position = shard_for(@cluster_config[:count], id)
         sharded_changeset = Ecto.Changeset.change(changeset, %{user_id: id})
         insert_all(position, @cluster_config[:table], [sharded_changeset.changes])
+
+        id
       end
 
       def insert_all(position, table_name, changeset) when is_list(changeset) do

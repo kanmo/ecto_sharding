@@ -3,7 +3,26 @@ defmodule EctoShardingTest do
 
   import Ecto.Sharding.Shards.Users
 
-  @base_module_name ShardingApp.ShardedRepositories
+  defmodule UserSchema do
+    use Ecto.Schema
+    import Ecto.Changeset
+    alias ShardingApp.User
+
+    schema "users" do
+      field :user_id, :integer
+      field :message, :string
+      field :inserted_at, Ecto.DateTime
+T    end
+
+    def changeset(user, attrs) do
+      user
+      |> cast(attrs, [:user_id, :message])
+      |> validate_required([:message])
+    end
+  end
+
+
+  @base_module_name EctoSharding.ShardedRepositories
   @cluster_config Application.get_env(:ecto_sharding, :cluster)
   @sequencer_config Application.get_env(:ecto_sharding, :sequencer)
 
@@ -21,4 +40,17 @@ defmodule EctoShardingTest do
       end
     end
   end
+
+  describe "Sharding" do
+    test "insert from changeset" do
+      changeset = UserSchema.changeset(%UserSchema{},
+        %{ message: "from changeset" })
+        user_id = Ecto.Sharding.Shards.Users.sharded_insert(changeset)
+
+        repo = Ecto.Sharding.Shards.Users.repository(user_id)
+        result = repo.run("select exists (select * from users where user_id = #{user_id})")
+        assert result.rows == [[1]]
+    end
+  end
+
 end
