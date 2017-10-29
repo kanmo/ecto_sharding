@@ -58,17 +58,13 @@ defmodule Ecto.Sharding.Shards.ShardingInitializer do
         id = next_sequence_id
         position = shard_for(@cluster_config[:count], id)
         sharded_changeset = Ecto.Changeset.change(changeset, %{user_id: id})
-        insert_all(position, @cluster_config[:table], [sharded_changeset.changes])
+        insert(position, @cluster_config[:table], sharded_changeset)
 
         id
       end
 
-      def insert_all(position, table_name, changeset) when is_list(changeset) do
-        repository_module_name(@base_module_name, @cluster_config[:name], position).insert_all(table_name, changeset, [])
-      end
-
-      def insert_all(position, table_name, changeset) do
-        insert_all(position, table_name, [changeset])
+      def insert(position, table_name, changeset) do
+        repository_module_name(@base_module_name, @cluster_config[:name], position).insert(changeset)
       end
 
       def repository(user_id) do
