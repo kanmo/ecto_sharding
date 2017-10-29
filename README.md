@@ -108,3 +108,7 @@ end
 ```elixir
 repository = YourApp.Shards.Users.repository(user.user_id)
 ```
+
+## Thanks
+This library was made with reference to [activerecord-sharding](https://github.com/hirocaster/activerecord-sharding).  
+I thank the author of the activerecord-sharding.
