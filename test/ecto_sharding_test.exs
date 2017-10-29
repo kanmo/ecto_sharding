@@ -6,12 +6,11 @@ defmodule EctoShardingTest do
   defmodule UserSchema do
     use Ecto.Schema
     import Ecto.Changeset
-    alias ShardingApp.User
 
     schema "users" do
       field :user_id, :integer
       field :message, :string
-      field :inserted_at, Ecto.DateTime
+      field :inserted_at, :naive_datetime
 T    end
 
     def changeset(user, attrs) do
@@ -24,7 +23,6 @@ T    end
 
   @base_module_name EctoSharding.ShardedRepositories
   @cluster_config Application.get_env(:ecto_sharding, :cluster)
-  @sequencer_config Application.get_env(:ecto_sharding, :sequencer)
 
   describe "Repository Modules" do
     test "repository module name is correct for database name" do

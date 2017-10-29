@@ -26,7 +26,7 @@ defmodule Ecto.Sharding.Shards do
     Module.concat([base, name])
   end
 
-  def do_create_module(%{position: position, table: table, app_name: app_name, module: module}) do
+  def do_create_module(%{app_name: app_name, module: module}) do
     Module.create(module,
       quote do
         use Ecto.Repo, otp_app: unquote(app_name)
@@ -38,7 +38,7 @@ defmodule Ecto.Sharding.Shards do
       end, Macro.Env.location(__ENV__))
   end
 
-  def do_create_sequencer_module(%{table: table, app_name: app_name, module: module}) do
+  def do_create_sequencer_module(%{app_name: app_name, module: module}) do
     Module.create(module,
       quote do
         use Ecto.Repo, otp_app: unquote(app_name)
