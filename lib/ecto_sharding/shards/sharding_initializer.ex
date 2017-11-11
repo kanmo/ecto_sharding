@@ -56,7 +56,7 @@ defmodule Ecto.Sharding.Shards.ShardingInitializer do
 
       def sharded_insert(changeset) do
         id = next_sequence_id()
-        position = shard_for(@cluster_config[:count], id)
+        position = shard_key(id)
         sharded_changeset = Ecto.Changeset.change(changeset, %{user_id: id})
         insert(position, @cluster_config[:table], sharded_changeset)
 

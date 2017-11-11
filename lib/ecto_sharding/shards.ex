@@ -48,8 +48,4 @@ defmodule Ecto.Sharding.Shards do
         end
       end, Macro.Env.location(__ENV__))
   end
-
-  def shard_for(count, id) do
-    Integer.mod(id,  count)
-  end
 end
