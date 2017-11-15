@@ -41,13 +41,10 @@ defmodule EctoShardingTest do
   describe "Sharding" do
     test "insert from changeset" do
       email_addr = "example.com"
-      changeset = UserSchema.changeset(%UserSchema{}, %{ email:  email_addr })
+      changeset = UserSchema.changeset(%UserSchema{}, %{ email: email_addr })
       Ecto.Sharding.Shards.Users.sharded_insert(changeset)
 
-      repo =
-        Integer.mod(:erlang.crc32(email_addr), @cluster_config[:slot_size])
-        |> Ecto.Sharding.Shards.Users.fetch_repo
-
+      repo = Ecto.Sharding.Shards.Users.fetch_repo(email_addr)
       result = repo.run("select exists (select * from users where email = '#{email_addr}')")
       assert result.rows == [[1]]
     end

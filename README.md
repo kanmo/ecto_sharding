@@ -73,6 +73,7 @@ config :sharding_app, :cluster, [
   count: Enum.count(user_databases),
   name: "Users",
   table: "users",
+  distkey: "email",
   worker_name: YourAppName.Repositories.Users,
   supervisor_name: YourAppName.Repositories.UserSupervisor,
   slot_size: 1048576

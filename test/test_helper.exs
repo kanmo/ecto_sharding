@@ -49,6 +49,7 @@ Application.put_env(:ecto_sharding, :cluster, [
       count: Enum.count(user_databases),
       name: "Users",
       table: "users",
+      distkey: "email",
       worker_name: Ecto.Sharding.Repositories.Users,
       supervisor_name: Ecto.Sharding.Repositories.UserSupervisor,
       slot_size: 1048576

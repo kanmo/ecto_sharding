@@ -55,19 +55,20 @@ defmodule Ecto.Sharding.Shards.ShardingInitializer do
       end
 
       def sharded_insert(changeset) do
-        insert(@cluster_config[:table], changeset)
+        distkey = @cluster_config[:distkey] |> String.to_atom
+        repo =
+          Map.get(changeset.changes, distkey)
+          |> fetch_repo
+
+        repo.insert(changeset)
       end
 
-      def fetch_repo(slot) do
+      def fetch_repo(distkey) do
+        slot = Integer.mod(:erlang.crc32(distkey), @cluster_config[:slot_size])
         repos = Application.get_env(@app_name, :ecto_repos)
         Enum.find(repos, fn repo ->
           Enum.member?(repo.config[:slot], slot)
         end)
-      end
-
-      def insert(table_name, changeset) do
-        slot = Integer.mod(:erlang.crc32(changeset.changes.email), @cluster_config[:slot_size])
-        fetch_repo(slot).insert(changeset)
       end
 
     end
