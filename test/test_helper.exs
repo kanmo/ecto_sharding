@@ -7,7 +7,8 @@ user_databases = [
     password: "",
     database: "user_0",
     hostname: "localhost",
-    pool_size: 5
+    pool_size: 5,
+    slot: 0..262143
   ],
   [
     adapter: Ecto.Adapters.MySQL,
@@ -15,17 +16,27 @@ user_databases = [
     password: "",
     database: "user_1",
     hostname: "localhost",
-    pool_size: 5
+    pool_size: 5,
+    slot: 262144..524287
+  ],
+  [
+    adapter: Ecto.Adapters.MySQL,
+    username: "root",
+    password: "",
+    database: "user_2",
+    hostname: "localhost",
+    pool_size: 5,
+    slot: 524288..786431
+  ],
+  [
+    adapter: Ecto.Adapters.MySQL,
+    username: "root",
+    password: "",
+    database: "user_3",
+    hostname: "localhost",
+    pool_size: 5,
+    slot: 786432..1048575
   ]
-]
-
-user_sequencer = [
-  adapter: Ecto.Adapters.MySQL,
-  username: "root",
-  password: "",
-  database: "user_0",
-  hostname: "localhost",
-  pool_size: 5
 ]
 
 Application.put_env(:ecto_sharding, :config, [
@@ -40,25 +51,16 @@ Application.put_env(:ecto_sharding, :cluster, [
       table: "users",
       worker_name: Ecto.Sharding.Repositories.Users,
       supervisor_name: Ecto.Sharding.Repositories.UserSupervisor,
-    ])
-
-Application.put_env(:ecto_sharding, :sequencer, [
-      sequencer: user_sequencer,
-      table: "user_id",
-      worker_name: Ecto.Sharding.Repositories.Sequencer,
-      supervisor_name: Ecto.Sharding.Repositories.SequenceSupervisor
+      slot_size: 1048576
     ])
 
 Application.put_env(:ecto_sharding, :ecto_repos, [])
 
-
 defmodule Ecto.Sharding.Shards.Users do
   use Ecto.Sharding.Shards.ShardingInitializer
-  use Ecto.Sharding.Shards.SequencerInitializer
 end
 
-children = Ecto.Sharding.Shards.Users.generate_sharding_repository_supervisor([]) ++ Ecto.Sharding.Shards.Users.generate_sequencer_repository_supervisor([])
-
+children = Ecto.Sharding.Shards.Users.generate_sharding_repository_supervisor([])
 opts = [strategy: :one_for_one, name: Ecto.Sharding.Supervisor]
 
 import Supervisor.Spec, warn: false
