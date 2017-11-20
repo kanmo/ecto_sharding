@@ -50,7 +50,7 @@ user_databases = [
     database: "user_2",
     hostname: "localhost",
     pool_size: 5,
-    slot: 524287..786431
+    slot: 524288..786431
   ],
   [
     adapter: Ecto.Adapters.MySQL,
